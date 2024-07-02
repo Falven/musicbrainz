@@ -135,22 +135,6 @@ The tool will save the configuration used in the top-level output directory as a
 
 This JSON file contains metadata about the cover art images, including their URLs, dimensions, resolution, and local paths (if images were downloaded).
 
-## Notes
-
-Ensure you have the required Python packages installed. It's recommended to use `poetry` for managing dependencies:
-
-1. Install `poetry` if you haven't already:
-   ```sh
-   curl -sSL https://install.python-poetry.org | python3 -
-   ```
-
-2. Install the dependencies using `poetry`:
-   ```sh
-   poetry install
-   ```
-
-The required packages are:
-
     - aiohttp
     - PIL (Pillow)
     - tenacity
