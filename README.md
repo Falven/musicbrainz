@@ -2,7 +2,7 @@
 
 ## Description
 
-The Cover Art Hunter is a tool designed to fetch cover art for specified artists and albums from MusicBrainz and save the results as JSON files. Optionally, it can also download and save the cover art images in a structured directory hierarchy. The tool uses `prompt_toolkit` for enhanced input handling.
+Cover Art Hunter is a CLI tool designed to fetch cover art for specified artists and albums from MusicBrainz and save the results as JSON files. Optionally, it can also download and save the cover art images in a structured directory hierarchy.
 
 ## Features
 
