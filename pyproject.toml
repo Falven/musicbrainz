@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "musicbrainz"
+version = "0.1.0"
+description = ""
+authors = ["Fran Aguilera <falven2000@hotmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+rag-kit = {git = "https://github.com/Falven/rag_kit.git"}
+pillow = "^10.4.0"
+requests = "^2.32.3"
+aiohttp = "^3.9.5"
+tenacity = "^8.4.2"
+prompt-toolkit = "^3.0.47"
+tqdm = "^4.66.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
