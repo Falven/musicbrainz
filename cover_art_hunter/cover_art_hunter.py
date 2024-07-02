@@ -107,7 +107,11 @@ async def fetch_release_groups(
 
 
 async def get_release_groups(
-    session: aiohttp.ClientSession, artist: str, album: str, logger: logging.Logger
+    session: aiohttp.ClientSession,
+    artist: str,
+    album: str,
+    logger: logging.Logger,
+    progress_bar,
 ) -> List[Dict[str, Any]]:
     release_groups = []
     limit = 100
@@ -122,11 +126,14 @@ async def get_release_groups(
     ]
     results = []
 
-    for task in tqdm.as_completed(
-        tasks, total=len(tasks), desc=f"Fetching release groups for {artist} - {album}"
-    ):
+    progress_bar.total = total_count
+    progress_bar.refresh()
+
+    progress_bar.set_description(f"Fetching release groups for {artist} - {album}")
+    for task in tqdm.as_completed(tasks):
         result = await task
         results.append(result)
+        progress_bar.update(len(result.get("release-groups", [])))
 
     for result in results:
         release_groups.extend(result.get("release-groups", []))
@@ -157,17 +164,19 @@ async def get_cover_art_urls(
     artist: str,
     album: str,
     logger: logging.Logger,
+    progress_bar,
 ) -> List[Tuple[str, List[str]]]:
     tasks = [
         fetch_cover_art_urls(session, release_id, logger) for release_id in release_ids
     ]
     results = []
 
-    for task in tqdm.as_completed(
-        tasks, total=len(tasks), desc=f"Fetching cover art URLs for {artist} - {album}"
-    ):
+    progress_bar.total = len(tasks)
+    progress_bar.set_description(f"Fetching cover art URLs for {artist} - {album}")
+    for task in tqdm.as_completed(tasks):
         result = await task
         results.append(result)
+        progress_bar.update(1)
 
     return results
 
@@ -179,6 +188,7 @@ async def find_image_details(
     skip_existing: bool,
     desc: str,
     logger: logging.Logger,
+    progress_bar,
 ) -> List[Dict[str, Any]]:
     tasks = [
         fetch_image_details(session, url, save_path, skip_existing, logger)
@@ -186,9 +196,12 @@ async def find_image_details(
     ]
     image_details = []
 
-    for task in tqdm.as_completed(tasks, total=len(tasks), desc=desc):
+    progress_bar.total = len(tasks)
+    progress_bar.set_description(desc)
+    for task in tqdm.as_completed(tasks):
         result = await task
         image_details.append(result)
+        progress_bar.update(1)
 
     valid_image_details = [detail for detail in image_details if detail]
     sorted_details = sorted(
@@ -215,8 +228,11 @@ async def process_artist_album(
     output_dir: str,
     skip_existing: bool,
     logger: logging.Logger,
+    progress_bar,
 ) -> Dict[str, Any]:
-    release_groups = await get_release_groups(session, artist, album, logger)
+    release_groups = await get_release_groups(
+        session, artist, album, logger, progress_bar
+    )
     if release_type:
         release_groups = [
             rg for rg in release_groups if rg.get("primary-type") == release_type
@@ -235,7 +251,7 @@ async def process_artist_album(
     ]
 
     cover_art_results = await get_cover_art_urls(
-        session, release_ids, artist, album, logger
+        session, release_ids, artist, album, logger, progress_bar
     )
 
     all_cover_art_urls = [url for _, urls in cover_art_results for url in urls]
@@ -255,8 +271,9 @@ async def process_artist_album(
         all_cover_art_urls,
         save_path,
         skip_existing,
-        desc=f"Processing images for {artist} - {album}",
+        desc=f"Downloading images for {artist} - {album}",
         logger=logger,
+        progress_bar=progress_bar,
     )
 
     # Gather additional metadata
@@ -282,10 +299,14 @@ async def main(config: Dict[str, Any], logger: logging.Logger) -> None:
 
     async with aiohttp.ClientSession() as session:
         highest_res_images = []
+        tasks = []
         for artist_album in artists_albums:
             artist = artist_album["artist"]
             for album in artist_album["albums"]:
-                highest_res_image = await process_artist_album(
+                progress_bar = tqdm(
+                    total=1, desc=f"Processing {artist} - {album}", unit="task"
+                )
+                task = process_artist_album(
                     session,
                     artist,
                     album,
@@ -295,7 +316,15 @@ async def main(config: Dict[str, Any], logger: logging.Logger) -> None:
                     output_dir,
                     skip_existing,
                     logger,
+                    progress_bar,
                 )
+                tasks.append(task)
+
+        results = await asyncio.gather(*tasks)
+
+        for highest_res_image, artist_album in zip(results, artists_albums):
+            artist = artist_album["artist"]
+            for album in artist_album["albums"]:
                 if highest_res_image:
                     highest_res_images.append(
                         {
@@ -332,7 +361,7 @@ if __name__ == "__main__":
         "--verbosity",
         type=str,
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        default="INFO",
+        default="ERROR",
         help="Set the logging verbosity level",
     )
     args = parser.parse_args()

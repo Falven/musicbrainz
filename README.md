@@ -2,7 +2,7 @@
 
 ## Description
 
-Cover Art Hunter is a CLI tool designed to fetch cover art for specified artists and albums from MusicBrainz and save the results as JSON files. Optionally, it can also download and save the cover art images in a structured directory hierarchy.
+The Cover Art Hunter is a tool designed to fetch cover art for specified artists and albums from MusicBrainz and save the results as JSON files. Optionally, it can also download and save the cover art images in a structured directory hierarchy. The tool uses `prompt_toolkit` for enhanced input handling.
 
 ## Features
 
@@ -134,6 +134,22 @@ The tool will save the configuration used in the top-level output directory as a
 ```
 
 This JSON file contains metadata about the cover art images, including their URLs, dimensions, resolution, and local paths (if images were downloaded).
+
+## Notes
+
+Ensure you have the required Python packages installed. It's recommended to use `poetry` for managing dependencies:
+
+1. Install `poetry` if you haven't already:
+   ```sh
+   curl -sSL https://install.python-poetry.org | python3 -
+   ```
+
+2. Install the dependencies using `poetry`:
+   ```sh
+   poetry install
+   ```
+
+The required packages are:
 
     - aiohttp
     - PIL (Pillow)
