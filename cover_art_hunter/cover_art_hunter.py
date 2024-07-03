@@ -289,7 +289,9 @@ async def process_artist_album(
     return sorted_image_details[0] if sorted_image_details else {}
 
 
-async def main(config: Dict[str, Any], logger: logging.Logger) -> None:
+async def main(
+    config: Dict[str, Any], logger: logging.Logger, should_save_config: bool
+) -> None:
     artists_albums = config["artists_albums"]
     release_type = config.get("release_type")
     status = config.get("status")
@@ -342,6 +344,13 @@ async def main(config: Dict[str, Any], logger: logging.Logger) -> None:
             )
             save_output_to_file(highest_res_images, final_filename, logger)
 
+        # Save config to a JSON file in the top-level directory if not loaded from a config file
+        if should_save_config:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            config_filename = os.path.join(output_dir, f"config_{timestamp}.json")
+            with open(config_filename, "w") as file:
+                json.dump(config, file, indent=4)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -369,11 +378,15 @@ if __name__ == "__main__":
     log_level = getattr(logging, args.verbosity.upper(), logging.ERROR)
     logger = setup_logger(__name__, log_level)
 
+    config_loaded_from_file = False
+
     if args.config_file:
         with open(args.config_file, "r") as file:
             config = json.load(file)
+            config_loaded_from_file = True
     elif args.config_json:
         config = json.loads(args.config_json)
+        config_loaded_from_file = True
     else:
         config = {}
         release_type = prompt(
@@ -424,10 +437,4 @@ if __name__ == "__main__":
 
         config["artists_albums"] = artists_albums
 
-        # Save config to a JSON file in the top-level directory
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        config_filename = os.path.join(config["output_dir"], f"config_{timestamp}.json")
-        with open(config_filename, "w") as file:
-            json.dump(config, file, indent=4)
-
-    asyncio.run(main(config, logger))
+    asyncio.run(main(config, logger, not config_loaded_from_file))
