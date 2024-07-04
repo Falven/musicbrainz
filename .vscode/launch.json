@@ -4,7 +4,7 @@
             "name": "Python Debugger: Current File",
             "type": "debugpy",
             "request": "launch",
-            "program": "${file}",
+            "program": "$cover_art_hunter/cover_art_hunter.py",
             "args": [
                 "--config_file",
                 "data/config.json",
