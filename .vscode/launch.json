@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "Python Debugger: Current File",
+            "name": "Python Debugger: Cover Art Hunter",
             "type": "debugpy",
             "request": "launch",
             "program": "$cover_art_hunter/cover_art_hunter.py",
