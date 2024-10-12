@@ -154,7 +154,7 @@ async def fetch_cover_art_urls(
             if "image" in image and image.get("types") and "Front" in image["types"]
         ]
         return release_id, urls
-    except RetryError as e:
+    except RetryError:
         return release_id, []
 
 

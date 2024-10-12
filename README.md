@@ -11,6 +11,15 @@ The Cover Art Hunter is a tool designed to fetch cover art for specified artists
 - Optionally download and save cover art images.
 - Create a structured directory hierarchy for organizing the output.
 
+## Setup
+
+### Cert
+
+```shell
+sudo cat gdig2.crt.pem >> /opt/homebrew/etc/openssl@3/cert.pem
+openssl s_client -showcerts -connect archive.org:443
+```
+
 ## Arguments and Flags
 
 - `--config_json` (optional): A JSON string containing the configuration including artists, albums, release type, status, output directory, and save images flag.
